@@ -1,18 +1,18 @@
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="utf-8" />
-    <title>我的第一个文章 | Voyagerの小窝</title>
-    <meta name="author" content="Mr.Su" />
-    <meta name="description" content="" />
-    <meta name="keywords" content="" />
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
-    />
-    <link rel="icon" href="/images/avatar.jpg" />
-    <link rel="preconnect" href="https://s4.zstatic.net" />
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+
+    <head>
+        <meta charset="utf-8" />
+        <title>
+            我的第一个文章 | 阁下星辰不可及の家
+        </title>
+        <meta name="author" content="阁下星辰不可及" />
+        <meta name="description" content="" />
+        <meta name="keywords" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <link rel="icon" href="/images/1.jpg" />
+        <link rel="preconnect" href="https://s4.zstatic.net" />
 <script src="https://s4.zstatic.net/ajax/libs/vue/3.3.7/vue.global.prod.min.js"></script>
 <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.cn" />
@@ -48,22 +48,23 @@
 
 <link rel="stylesheet" href="/css/main.css" />
 
-<meta name="generator" content="Hexo 7.3.0"></head>
-<body>
-    <div id="layout">
-        <transition name="fade">
-            <div id="loading" v-show="loading">
-                <div id="loading-circle">
-                    <h2>LOADING</h2>
-                    <p>加载过慢请开启缓存 浏览器默认开启</p>
-                    <img src="/images/loading.gif" />
+    <meta name="generator" content="Hexo 7.3.0"></head>
+
+    <body>
+        <div id="layout">
+            <transition name="fade">
+                <div id="loading" v-show="loading">
+                    <div id="loading-circle">
+                        <h2>LOADING</h2>
+                        <p>加载过慢请开启缓存 浏览器默认开启</p>
+                        <img src="/images/loading.gif" />
+                    </div>
                 </div>
-            </div>
-        </transition>
-        <div id="menu" :class="{ hidden: hiddenMenu, 'menu-color': menuColor}">
+            </transition>
+            <div id="menu" :class="{ hidden: hiddenMenu, 'menu-color': menuColor}">
     <nav id="desktop-menu">
         <a class="title" href="/">
-            <span>VOYAGERの小窝</span>
+            <span>阁下星辰不可及の家</span>
         </a>
         
         <a href="/">
@@ -95,7 +96,7 @@
     <nav id="mobile-menu">
         <div class="title" @click="showMenuItems = !showMenuItems">
             <i class="fa-solid fa-bars fa-fw"></i>
-            <span>&emsp;VOYAGERの小窝</span>
+            <span>&emsp;阁下星辰不可及の家</span>
         </div>
         <transition name="slide">
             <div class="items" v-show="showMenuItems">
@@ -153,8 +154,8 @@
     <div id="menu-curtain" @click="showMenuItems = !showMenuItems" v-show="showMenuItems"></div>
 </transition>
 
-        <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
-            <div class="article">
+                <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
+                    <div class="article">
     <div>
         <h1>我的第一个文章</h1>
     </div>
@@ -182,40 +183,37 @@
     
 </div>
 
-            <footer id="footer">
+                        <footer id="footer">
     <div id="footer-wrap">
         <div>
             &copy;
-            2022 - 2024 Voyagerの小窝
+            2022 - 2024 阁下星辰不可及の家
             <span id="footer-icon">
                 <i class="fa-solid fa-font-awesome fa-fw"></i>
             </span>
-            &commat;Mr.Su
-        </div>
-        <div>
-            Based on the <a target="_blank" rel="noopener" href="https://hexo.io">Hexo Engine</a> &amp;
-            <a target="_blank" rel="noopener" href="https://github.com/theme-particlex/hexo-theme-particlex">ParticleX Theme</a>
+            &commat;阁下星辰不可及
         </div>
         
     </div>
 </footer>
 
+                </div>
+                
+                    <transition name="fade">
+                        <div id="preview" ref="preview" v-show="previewShow">
+                            <img id="preview-content" ref="previewContent" />
+                        </div>
+                    </transition>
+                    
         </div>
+        <script src="/js/main.js"></script>
         
-        <transition name="fade">
-            <div id="preview" ref="preview" v-show="previewShow">
-                <img id="preview-content" ref="previewContent" />
-            </div>
-        </transition>
-        
-    </div>
-    <script src="/js/main.js"></script>
-    
-    
+            
 
 
 
 
-    
-</body>
-</html>
+                
+    </body>
+
+    </html>
