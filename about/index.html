@@ -43,6 +43,10 @@
 
 
 
+<script src="https://s4.zstatic.net/ajax/libs/waline/2.15.8/waline.min.js"></script>
+<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/waline/2.15.8/waline.min.css" />
+<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/waline/2.15.8/waline-meta.min.css" />
+
 
 
 
@@ -171,15 +175,46 @@
     </div>
     
     <div class="content" v-pre>
-        
+        <p><strong>一个简单的不能再简单的自我介绍：</strong></p>
+<ul>
+<li><em>一个平平无奇的打工人</em></li>
+</ul>
+<hr>
+<p><strong>语言：</strong></p>
+<ul>
+<li><p>Java</p>
+</li>
+<li><p>Golang</p>
+</li>
+<li><p>Node.js</p>
+</li>
+<li><p>Shell</p>
+</li>
+</ul>
+<hr>
+<p>![](C:\Users\Lenovo\Pictures\Saved Pictures\d7419e3bec91efe3cf96b6adeffdc7a327597160bbc6e12c4.jpg)</p>
+
     </div>
     
     
     
     
     
+    <div id="comment">
+        <div id="waline-container"></div>
+    </div>
     
     
+    
+    
+        <!-- 样式文件 -->
+        <link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css" />
+        <div id="comment">
+            <div id="waline-container">
+            </div>
+        </div>
+        
+
 </div>
 
                         <footer id="footer">
@@ -209,6 +244,23 @@
         
             
 
+
+<script>
+    Waline.init({
+        el: "#waline-container",
+        serverURL: "https://214stars.vercel.app/",
+        commentCount: true,
+        pageview: false,
+        emoji: "https://unpkg.com/@waline/emojis@1.2.0/weibo,https://unpkg.com/@waline/emojis@1.2.0/alus,https://unpkg.com/@waline/emojis@1.2.0/bilibili,https://unpkg.com/@waline/emojis@1.2.0/qq,https://unpkg.com/@waline/emojis@1.2.0/tieba,https://unpkg.com/@waline/emojis@1.2.0/tw-emoji".split(","),
+        meta: "nick,mail,link".split(","),
+        requiredMeta: "nick".split(","),
+        lang: "zh-CN",
+        wordLimit: 0,
+        pageSize: "10",
+        login: "enable",
+        
+    });
+</script>
 
 
 
