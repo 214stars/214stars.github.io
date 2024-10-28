@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>
-            文章缩略 | 阁下星辰不可及の家
+            Go2系统性简明教程（二） | 阁下星辰不可及の家
         </title>
         <meta name="author" content="阁下星辰不可及" />
         <meta name="description" content="" />
@@ -161,14 +161,23 @@
                 <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
                     <div class="article">
     <div>
-        <h1>文章缩略</h1>
+        <h1>Go2系统性简明教程（二）</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2024/9/25
+            2024/10/29
+        </span>
+        
+        <span class="category">
+            <a href="/categories/Go2%E7%B3%BB%E7%BB%9F%E6%80%A7%E7%AE%80%E6%98%8E%E6%95%99%E7%A8%8B/">
+                <span class="icon">
+                    <i class="fa-solid fa-bookmark fa-fw"></i>
+                </span>
+                Go2系统性简明教程
+            </a>
         </span>
         
         
@@ -180,8 +189,8 @@
             
             <span class="tag">
                 
-                <a href="/tags/Markdown/" style="color: #ffa2c4">
-                    Markdown
+                <a href="/tags/Golang/" style="color: #00bcd4">
+                    Golang
                 </a>
             </span>
             
@@ -190,10 +199,134 @@
     </div>
     
     <div class="content" v-pre>
-        <p>这里展示大概内容</p>
-<span id="more"></span>
+        <h2 id="Go-2-设计草案"><a href="#Go-2-设计草案" class="headerlink" title="Go 2 设计草案"></a>Go 2 设计草案</h2><span id="more"></span>
 
-<p>细节部分</p>
+<h2 id="Go-2-设计草案-1"><a href="#Go-2-设计草案-1" class="headerlink" title="Go 2 设计草案"></a>Go 2 设计草案</h2><p>为了进一步完善Go语言，提供更好的体验。Go语言社区目前发布了三类重要的设计草案，分别是<code>错误处理(Error handling)</code>、<code>错误值(Error values)</code>、<code>泛型(Generics)</code>，这几个草案代表了社区重点关注的完善方向，但并不代表最终的实现。</p>
+<h3 id="错误处理-Error-Handling"><a href="#错误处理-Error-Handling" class="headerlink" title="错误处理(Error Handling)"></a>错误处理(Error Handling)</h3><p>Go1 的错误处理机制非常简单，通过返回值的方式，强迫调用者对错误进行处理，这种设计导致会在代码中写大量的<code>if</code>判断。例如：</p>
+<pre><code>func CopyFile(src, dst string) &#123;
+    r := os.Open(src)
+    defer r.Close()
+
+    w := os.Create(dst)
+    io.Copy(w, r)
+    w.Close()
+&#125;
+</code></pre>
+<p>IO操作容易引发错误，文件打开失败，创建失败，拷贝失败等都会产生错误。如果要对这个函数进行完整的错误处理，代码将变成这样：</p>
+<p>IO操作容易引发错误，文件打开失败，创建失败，拷贝失败等都会产生错误。如果要对这个函数进行完整的错误处理，代码将变成这样：</p>
+<pre><code class="go">func CopyFile(src, dst string) error &#123;
+    r, err := os.Open(src)
+    if err != nil &#123;
+        return err
+    &#125;
+    defer r.Close()
+
+    w, err := os.Create(dst)
+    if err != nil &#123;
+        return err
+    &#125;
+    defer w.Close()
+
+    if _, err := io.Copy(w, r); err != nil &#123;
+        return err
+    &#125;
+    if err := w.Close(); err != nil &#123;
+        return err
+    &#125;
+&#125;
+</code></pre>
+<p>看似逻辑清晰，但不够优雅，充斥了大量重复的逻辑。这是Go错误处理机制的缺陷。同时，因为错误处理机制的繁琐，很多开发者在开发应用时，很少去检查并处理错误，程序的健壮性得不到保证。</p>
+<p>为了解决这个问题，Go2 发布了一个设计草案供社区讨论，Go2将会完善错误处理机制，错误处理的语法将会简洁很多。</p>
+<p>这个提案引入了<code>handle err</code>和<code>check</code>关键字，上面的函数可以简化成：</p>
+<pre><code class="go">func CopyFile(src, dst string) error &#123;
+    handle err &#123;
+        return fmt.Errorf(&quot;copy %s %s: %v&quot;, src, dst, err)
+    &#125;
+    r := check os.Open(src)
+    defer r.Close()
+
+    w := check os.Create(dst)
+    check io.Copy(w, r)
+    check w.Close()
+&#125;
+</code></pre>
+<p>为什么不使用被Java、Python等语言采用的<code>try</code>关键字呢？比如写成：</p>
+<pre><code class="go">data := try parseHexdump(string(hex))
+</code></pre>
+<p>上面的写法看似和谐，但<code>try</code>关键字直接应用在 error values 时，可读性就没那么好了：</p>
+<pre><code class="go">data, err := parseHexdump(string(hex))
+if err == ErrBadHex &#123;
+    ... special handling ...
+&#125;
+try err
+</code></pre>
+<p>很明显，在这种场景下，<code>check err</code>显然比<code>try err</code>更有意义。</p>
+<h3 id="错误值-Error-values"><a href="#错误值-Error-values" class="headerlink" title="错误值(Error values)"></a>错误值(Error values)</h3><p>同样由于错误处理机制设计得较为简陋，Go语言对<code>Error values</code>支持有限。任何值，只要实现了<code>error</code>接口，都是错误类型。由于缺少细粒度的设计，在各种库当中，判断是否产生错误以及产生了哪类错误的方式多种多样，例如<code>io.EOF</code>，<code>os.IsNotExist</code>，<code>err.Error()</code>等，。另外，Go语言目前没有机制追溯到完整的错误链条。例如，</p>
+<pre><code class="go">func funcB() error &#123;
+    if v, err := funcA(); if err != nil &#123;
+        return fmt.Errorf(&quot;connect to db: %v&quot;, err)
+    &#125;
+&#125;
+func funcC() error &#123;
+    v, err := funcB()
+    if err != nil &#123;
+        return fmt.Errorf(&quot;write users database: %v&quot;, err)
+    &#125;
+&#125;
+</code></pre>
+<p><code>funcC</code>返回的错误信息是：</p>
+<pre><code>write users database: connect to db: open /etc/xx.conf: permission denied
+</code></pre>
+<p>每一层，用额外的字符串对错误进行封装，是目前最常用的方法，除了通过字符串解析，很难还原出完整的错误链条。</p>
+<p>为了解决Error values缺少标准的问题，有2个提案，分别针对<code>Error inspection</code>和<code>Error formatting</code>。</p>
+<ul>
+<li>针对 Error inspection ，为error定义了一个可选的接口<code>Unwrap</code>，用来返回错误链上的下一个错误。</li>
+</ul>
+<pre><code class="go">package errors
+
+type Wrapper interface &#123;
+    Unwrap() error
+&#125;
+</code></pre>
+<p>例如，</p>
+<pre><code class="go">// WriteError 实现 Unwrap 接口
+func (e *WriteError) Unwrap() error &#123; return e.Err &#125;
+</code></pre>
+<ul>
+<li>针对 Error format，定义了一个可选的接口<code>Format</code>，用来返回错误信息。</li>
+</ul>
+<pre><code class="go">package errors
+
+type Formatter interface &#123;
+    Format(p Printer) (next error)
+&#125;
+</code></pre>
+<p>例如，</p>
+<pre><code class="go">func (e *WriteError) Format(p errors.Printer) (next error) &#123;
+    p.Printf(&quot;write %s database&quot;, e.Database)
+    if p.Detail() &#123;
+        p.Printf(&quot;more detail here&quot;)
+    &#125;
+    return e.Err
+&#125;
+</code></pre>
+<h3 id="泛型-Generics"><a href="#泛型-Generics" class="headerlink" title="泛型(Generics)"></a>泛型(Generics)</h3><p>Go语言当前可使用<code>inferface&#123;&#125;</code>，允许函数参数和返回值是任何类型的值。但这过于灵活，很多时候需要在获取参数后使用类型断言，进而决定下一步的处理。对比C++&#x2F;Java的标准容器，Go语言在泛型方面有很大不足，因此针对泛型的提案即希望弥补这方面的不足。提案希望能够支持以下功能：</p>
+<pre><code class="go">type List(type T) []T
+// 返回map的键
+func Keys(type K, V)(m map[K]V) []K
+// 去重过滤
+func Uniq(&lt;-chan T) &lt;-chan T
+// 合并
+func Merge(chans ...&lt;-chan T) &lt;-chan T
+// 使用自定义排序函数排序
+func SortSlice(data []T, less func(x, y T) bool)
+</code></pre>
+<p>例如，我们需要返回一个map对象中所有的键，而希望这个键的类型可以是任意类型。</p>
+<pre><code class="go">var ints List(int)
+keysA := Keys(int, string)(map[int]string&#123;1:&quot;one&quot;, 2: &quot;two&quot;&#125;)
+keysB := Keys(string, string)(map[string]string&#123;&quot;name&quot;:&quot;geektutu&quot;, &quot;age&quot;: &quot;twenty&quot;&#125;)
+// [1, 2]
+</code></pre>
 
     </div>
     
