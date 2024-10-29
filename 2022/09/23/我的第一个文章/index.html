@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>
-            MySQL架构 | 阁下星辰不可及の家
+            我的第一个文章 | 阁下星辰不可及の家
         </title>
         <meta name="author" content="阁下星辰不可及" />
         <meta name="description" content="" />
@@ -161,14 +161,14 @@
                 <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
                     <div class="article">
     <div>
-        <h1>MySQL架构</h1>
+        <h1>我的第一个文章</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2024/10/28
+            2022/9/23
         </span>
         
         
@@ -180,8 +180,8 @@
             
             <span class="tag">
                 
-                <a href="/tags/MySQL/" style="color: #00a596">
-                    MySQL
+                <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%B8%B8/" style="color: #00bcd4">
+                    学习日常
                 </a>
             </span>
             
@@ -190,14 +190,7 @@
     </div>
     
     <div class="content" v-pre>
-        <h2 id="MySQL-的基本架构"><a href="#MySQL-的基本架构" class="headerlink" title="MySQL 的基本架构"></a>MySQL 的基本架构</h2><span id="more"></span>
-
-<h2 id="基本架构"><a href="#基本架构" class="headerlink" title="基本架构"></a>基本架构</h2><ol>
-<li>⼤体来说，MySQL 可以分为 Server 层和存储引擎两部分。<br>Server 层包括：连接器、查询缓存、分析器、优化器、执⾏器等，涵盖了 MySQL 的⼤多数核⼼服务功能，以及所</li>
-<li>有的内置函数（如：⽇期、时间、数学和加密函数等），所有跨存储引擎的功能都在这⼀层实现，⽐如：存储过<br>程、触发器、视图等等。</li>
-<li>存储引擎层负责：数据的存储和提取。其架构是插件式的，⽀持 InnoDB、MyISAM 等多个存储引擎。从<br>MySQL5.5.5 版本开始默认的是InnoDB，但是在建表时可以通过 engine &#x3D; MyISAM 来指定存储引擎。不同存储引<br>擎的表数据存取⽅式不同，⽀持的功能也不同。</li>
-<li>不同的存储引擎共⽤⼀个 Server 层，也就是从连接器到执⾏器的部分</li>
-</ol>
+        <p>第一次尝试发布文章</p>
 
     </div>
     

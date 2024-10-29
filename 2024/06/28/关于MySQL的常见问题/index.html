@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>
-            Go2系统性简明教程（二） | 阁下星辰不可及の家
+            关于MySQL的常见问题一 | 阁下星辰不可及の家
         </title>
         <meta name="author" content="阁下星辰不可及" />
         <meta name="description" content="" />
@@ -161,22 +161,22 @@
                 <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
                     <div class="article">
     <div>
-        <h1>Go2系统性简明教程（二）</h1>
+        <h1>关于MySQL的常见问题一</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2024/10/29
+            2024/6/28
         </span>
         
         <span class="category">
-            <a href="/categories/Go2%E7%B3%BB%E7%BB%9F%E6%80%A7%E7%AE%80%E6%98%8E%E6%95%99%E7%A8%8B/">
+            <a href="/categories/%E7%BB%8F%E9%AA%8C/">
                 <span class="icon">
                     <i class="fa-solid fa-bookmark fa-fw"></i>
                 </span>
-                Go2系统性简明教程
+                经验
             </a>
         </span>
         
@@ -189,8 +189,15 @@
             
             <span class="tag">
                 
-                <a href="/tags/Golang/" style="color: #00bcd4">
-                    Golang
+                <a href="/tags/MySQL/" style="color: #ffa2c4">
+                    MySQL
+                </a>
+            </span>
+            
+            <span class="tag">
+                
+                <a href="/tags/%E9%9D%A2%E8%AF%95/" style="color: #00bcd4">
+                    面试
                 </a>
             </span>
             
@@ -199,134 +206,64 @@
     </div>
     
     <div class="content" v-pre>
-        <h2 id="Go-2-设计草案"><a href="#Go-2-设计草案" class="headerlink" title="Go 2 设计草案"></a>Go 2 设计草案</h2><span id="more"></span>
+        <h2 id="问题合集"><a href="#问题合集" class="headerlink" title="问题合集"></a>问题合集</h2><span id="more"></span>
 
-<h2 id="Go-2-设计草案-1"><a href="#Go-2-设计草案-1" class="headerlink" title="Go 2 设计草案"></a>Go 2 设计草案</h2><p>为了进一步完善Go语言，提供更好的体验。Go语言社区目前发布了三类重要的设计草案，分别是<code>错误处理(Error handling)</code>、<code>错误值(Error values)</code>、<code>泛型(Generics)</code>，这几个草案代表了社区重点关注的完善方向，但并不代表最终的实现。</p>
-<h3 id="错误处理-Error-Handling"><a href="#错误处理-Error-Handling" class="headerlink" title="错误处理(Error Handling)"></a>错误处理(Error Handling)</h3><p>Go1 的错误处理机制非常简单，通过返回值的方式，强迫调用者对错误进行处理，这种设计导致会在代码中写大量的<code>if</code>判断。例如：</p>
-<pre><code>func CopyFile(src, dst string) &#123;
-    r := os.Open(src)
-    defer r.Close()
-
-    w := os.Create(dst)
-    io.Copy(w, r)
-    w.Close()
-&#125;
-</code></pre>
-<p>IO操作容易引发错误，文件打开失败，创建失败，拷贝失败等都会产生错误。如果要对这个函数进行完整的错误处理，代码将变成这样：</p>
-<p>IO操作容易引发错误，文件打开失败，创建失败，拷贝失败等都会产生错误。如果要对这个函数进行完整的错误处理，代码将变成这样：</p>
-<pre><code class="go">func CopyFile(src, dst string) error &#123;
-    r, err := os.Open(src)
-    if err != nil &#123;
-        return err
-    &#125;
-    defer r.Close()
-
-    w, err := os.Create(dst)
-    if err != nil &#123;
-        return err
-    &#125;
-    defer w.Close()
-
-    if _, err := io.Copy(w, r); err != nil &#123;
-        return err
-    &#125;
-    if err := w.Close(); err != nil &#123;
-        return err
-    &#125;
-&#125;
-</code></pre>
-<p>看似逻辑清晰，但不够优雅，充斥了大量重复的逻辑。这是Go错误处理机制的缺陷。同时，因为错误处理机制的繁琐，很多开发者在开发应用时，很少去检查并处理错误，程序的健壮性得不到保证。</p>
-<p>为了解决这个问题，Go2 发布了一个设计草案供社区讨论，Go2将会完善错误处理机制，错误处理的语法将会简洁很多。</p>
-<p>这个提案引入了<code>handle err</code>和<code>check</code>关键字，上面的函数可以简化成：</p>
-<pre><code class="go">func CopyFile(src, dst string) error &#123;
-    handle err &#123;
-        return fmt.Errorf(&quot;copy %s %s: %v&quot;, src, dst, err)
-    &#125;
-    r := check os.Open(src)
-    defer r.Close()
-
-    w := check os.Create(dst)
-    check io.Copy(w, r)
-    check w.Close()
-&#125;
-</code></pre>
-<p>为什么不使用被Java、Python等语言采用的<code>try</code>关键字呢？比如写成：</p>
-<pre><code class="go">data := try parseHexdump(string(hex))
-</code></pre>
-<p>上面的写法看似和谐，但<code>try</code>关键字直接应用在 error values 时，可读性就没那么好了：</p>
-<pre><code class="go">data, err := parseHexdump(string(hex))
-if err == ErrBadHex &#123;
-    ... special handling ...
-&#125;
-try err
-</code></pre>
-<p>很明显，在这种场景下，<code>check err</code>显然比<code>try err</code>更有意义。</p>
-<h3 id="错误值-Error-values"><a href="#错误值-Error-values" class="headerlink" title="错误值(Error values)"></a>错误值(Error values)</h3><p>同样由于错误处理机制设计得较为简陋，Go语言对<code>Error values</code>支持有限。任何值，只要实现了<code>error</code>接口，都是错误类型。由于缺少细粒度的设计，在各种库当中，判断是否产生错误以及产生了哪类错误的方式多种多样，例如<code>io.EOF</code>，<code>os.IsNotExist</code>，<code>err.Error()</code>等，。另外，Go语言目前没有机制追溯到完整的错误链条。例如，</p>
-<pre><code class="go">func funcB() error &#123;
-    if v, err := funcA(); if err != nil &#123;
-        return fmt.Errorf(&quot;connect to db: %v&quot;, err)
-    &#125;
-&#125;
-func funcC() error &#123;
-    v, err := funcB()
-    if err != nil &#123;
-        return fmt.Errorf(&quot;write users database: %v&quot;, err)
-    &#125;
-&#125;
-</code></pre>
-<p><code>funcC</code>返回的错误信息是：</p>
-<pre><code>write users database: connect to db: open /etc/xx.conf: permission denied
-</code></pre>
-<p>每一层，用额外的字符串对错误进行封装，是目前最常用的方法，除了通过字符串解析，很难还原出完整的错误链条。</p>
-<p>为了解决Error values缺少标准的问题，有2个提案，分别针对<code>Error inspection</code>和<code>Error formatting</code>。</p>
 <ul>
-<li>针对 Error inspection ，为error定义了一个可选的接口<code>Unwrap</code>，用来返回错误链上的下一个错误。</li>
+<li><h2 id="⼀条-SQL-语句在数据库框架中的执行流程？"><a href="#⼀条-SQL-语句在数据库框架中的执行流程？" class="headerlink" title="⼀条 SQL 语句在数据库框架中的执行流程？"></a><strong>⼀条 SQL 语句在数据库框架中的执行流程？</strong></h2><ol>
+<li>应⽤程序把查询 SQL 语句发送给服务器端执⾏；</li>
+<li>查询缓存，如果查询缓存是打开的，服务器在接收到查询请求后，并不会直接去数据库查询，⽽是在数据库的<br> 查询缓存中找是否有相对应的查询数据，如果存在，则直接返回给客户端。只有缓存不存在时，才会进⾏下⾯<br> 的操作；</li>
+<li>查询优化处理，⽣成执⾏计划。这个阶段主要包括解析 SQL、预处理、优化 SQL 执⾏计划；</li>
+<li>MySQL 根据相应的执⾏计划完成整个查询；</li>
+<li>将查询结果返回给客户端。</li>
+</ol>
+</li>
+<li><h2 id="数据库的三范式是什么？"><a href="#数据库的三范式是什么？" class="headerlink" title="数据库的三范式是什么？"></a><strong>数据库的三范式是什么？</strong></h2></li>
 </ul>
-<pre><code class="go">package errors
-
-type Wrapper interface &#123;
-    Unwrap() error
-&#125;
-</code></pre>
-<p>例如，</p>
-<pre><code class="go">// WriteError 实现 Unwrap 接口
-func (e *WriteError) Unwrap() error &#123; return e.Err &#125;
-</code></pre>
+<ol>
+<li>第⼀范式：强调的是列的原⼦性，即数据库表的每⼀列都是不可分割的原⼦数据项；</li>
+<li>第⼆范式：要求实体的属性完全依赖于主关键字。所谓完全依赖是指不能存在仅依赖主关键字⼀部分的属性；</li>
+<li>第三范式：任何⾮主属性不依赖于其它⾮主属性。</li>
+</ol>
 <ul>
-<li>针对 Error format，定义了一个可选的接口<code>Format</code>，用来返回错误信息。</li>
+<li><h2 id="char-和-varchar-的区别？"><a href="#char-和-varchar-的区别？" class="headerlink" title="char 和 varchar 的区别？"></a><strong>char 和 varchar 的区别？</strong></h2><p>char(n) ：固定⻓度类型，⽐如：订阅 char(10)，当你输⼊”abc”三个字符的时候，它们占的空间还是 10 个字节，<br>其他 7 个是空字节。char 优点：效率⾼；缺点：占⽤空间；适⽤场景：存储密码的 md5 值，固定⻓度的，使⽤<br>char ⾮常合适。<br>varchar(n) ：可变⻓度，存储的值是每个值占⽤的字节再加上⼀个⽤来记录其⻓度的字节的⻓度。<br>所以，从空间上考虑 varcahr ⽐较合适；从效率上考虑 char ⽐较合适，⼆者使⽤需要权衡。</p>
+</li>
+<li><h2 id="varchar-10-和-varchar-20-的区别？"><a href="#varchar-10-和-varchar-20-的区别？" class="headerlink" title="varchar(10) 和 varchar(20) 的区别？"></a><strong>varchar(10) 和 varchar(20) 的区别？</strong></h2><p>varchar(10) 中 10 的涵义最多存放 10 个字符，varchar(10) 和 varchar(20) 存储 hello 所占空间⼀样，但后者在排序时会消耗更多内存，因为 order by col 采⽤ fixed_length 计算 col ⻓度。</p>
+</li>
+<li><h2 id="谈谈你对索引的理解？"><a href="#谈谈你对索引的理解？" class="headerlink" title="谈谈你对索引的理解？"></a><strong>谈谈你对索引的理解？</strong></h2></li>
 </ul>
-<pre><code class="go">package errors
-
-type Formatter interface &#123;
-    Format(p Printer) (next error)
-&#125;
-</code></pre>
-<p>例如，</p>
-<pre><code class="go">func (e *WriteError) Format(p errors.Printer) (next error) &#123;
-    p.Printf(&quot;write %s database&quot;, e.Database)
-    if p.Detail() &#123;
-        p.Printf(&quot;more detail here&quot;)
-    &#125;
-    return e.Err
-&#125;
-</code></pre>
-<h3 id="泛型-Generics"><a href="#泛型-Generics" class="headerlink" title="泛型(Generics)"></a>泛型(Generics)</h3><p>Go语言当前可使用<code>inferface&#123;&#125;</code>，允许函数参数和返回值是任何类型的值。但这过于灵活，很多时候需要在获取参数后使用类型断言，进而决定下一步的处理。对比C++&#x2F;Java的标准容器，Go语言在泛型方面有很大不足，因此针对泛型的提案即希望弥补这方面的不足。提案希望能够支持以下功能：</p>
-<pre><code class="go">type List(type T) []T
-// 返回map的键
-func Keys(type K, V)(m map[K]V) []K
-// 去重过滤
-func Uniq(&lt;-chan T) &lt;-chan T
-// 合并
-func Merge(chans ...&lt;-chan T) &lt;-chan T
-// 使用自定义排序函数排序
-func SortSlice(data []T, less func(x, y T) bool)
-</code></pre>
-<p>例如，我们需要返回一个map对象中所有的键，而希望这个键的类型可以是任意类型。</p>
-<pre><code class="go">var ints List(int)
-keysA := Keys(int, string)(map[int]string&#123;1:&quot;one&quot;, 2: &quot;two&quot;&#125;)
-keysB := Keys(string, string)(map[string]string&#123;&quot;name&quot;:&quot;geektutu&quot;, &quot;age&quot;: &quot;twenty&quot;&#125;)
-// [1, 2]
-</code></pre>
+<ol>
+<li>索引的出现是为了提⾼数据的查询效率，就像书的⽬录⼀样。⼀本500⻚的书，如果你想快速找到其中的某⼀个知识点，在不借助⽬录的情况下，那我估计你可得找⼀会⼉。同样，对于数据库的表⽽⾔，索引其实就是它的“录”。</li>
+<li>同样索引也会带来很多负⾯影响：创建索引和维护索引需要耗费时间，这个时间随着数据量的增加⽽增加；索引需要占⽤物理空间，不光是表需要占⽤数据空间，每个索引也需要占⽤物理空间；当对表进⾏增、删、改、的时候索引也要动态维护，这样就降低了数据的维护速度。<br>建⽴索引的原则：<ul>
+<li>在最频繁使⽤的、⽤以缩⼩查询范围的字段上建⽴索引；</li>
+<li>在频繁使⽤的、需要排序的字段上建⽴索引。<br>不适合建⽴索引的情况：</li>
+<li>对于查询中很少涉及的列或者重复值⽐较多的列，不宜建⽴索引；</li>
+<li>对于⼀些特殊的数据类型，不宜建⽴索引，⽐如：⽂本字段（text）等。</li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><h2 id="索引的底层使⽤的是什么数据结构？"><a href="#索引的底层使⽤的是什么数据结构？" class="headerlink" title="索引的底层使⽤的是什么数据结构？"></a><strong>索引的底层使⽤的是什么数据结构？</strong></h2><p>索引的数据结构和具体存储引擎的实现有关,，在MySQL中使⽤较多的索引有 Hash 索引、B+树索引等。⽽我们经常使⽤的 InnoDB 存储引擎的默认索引实现为 B+ 树索引。</p>
+</li>
+<li><h2 id="谈谈你对-B-树的理解？"><a href="#谈谈你对-B-树的理解？" class="headerlink" title="谈谈你对 B+ 树的理解？"></a><strong>谈谈你对 B+ 树的理解？</strong></h2></li>
+<li><p>B+ 树是基于 B 树和叶⼦节点顺序访问指针进⾏实现，它具有 B 树的平衡性，并且通过顺序访问指针来提⾼区<br>间查询的性能。</p>
+</li>
+<li><p>在 B+ 树中，⼀个节点中的 key 从左到右⾮递减排列，如果某个指针的左右相邻 key 分别是 key i 和 key<br>i+1，且不为 null，则该指针指向节点的所有 key ⼤于等于 key i 且⼩于等于 key i+1。</p>
+</li>
+<li><p>进⾏查找操作时，⾸先在根节点进⾏⼆分查找，找到⼀个 key 所在的指针，然后递归地在指针所指向的节点<br>进⾏查找。直到查找到叶⼦节点，然后在叶⼦节点上进⾏⼆分查找，找出 key 所对应的 data。</p>
+</li>
+<li><p>插⼊、删除操作会破坏平衡树的平衡性，因此在插⼊删除操作之后，需要对树进⾏⼀个分裂、合并、旋转等操<br>作来维护平衡性。</p>
+</li>
+<li><h2 id="为什么-InnoDB-存储引擎选⽤-B-树⽽不是-B-树呢？"><a href="#为什么-InnoDB-存储引擎选⽤-B-树⽽不是-B-树呢？" class="headerlink" title="为什么 InnoDB 存储引擎选⽤ B+ 树⽽不是 B 树呢？"></a><strong>为什么 InnoDB 存储引擎选⽤ B+ 树⽽不是 B 树呢？</strong></h2></li>
+</ul>
+<p>⽤ B+ 树不⽤ B 树考虑的是 IO 对性能的影响，B 树的每个节点都存储数据，⽽ B+ 树只有叶⼦节点才存储数据，所以查找相同数据量的情况下，B 树的⾼度更⾼，IO 更频繁。数据库索引是存储在磁盘上的，当数据量⼤时，就不能把整个索引全部加载到内存了，只能逐⼀加载每⼀个磁盘⻚（对应索引树的节点）。</p>
+<ul>
+<li><h2 id="谈谈你对聚簇索引的理解？"><a href="#谈谈你对聚簇索引的理解？" class="headerlink" title="谈谈你对聚簇索引的理解？"></a><strong>谈谈你对聚簇索引的理解？</strong></h2></li>
+</ul>
+<p>聚簇索引是对磁盘上实际数据重新组织以按指定的⼀个或多个列的值排序的算法。特点是存储数据的顺序和索引顺<br>序⼀致。⼀般情况下主键会默认创建聚簇索引，且⼀张表只允许存在⼀个聚簇索引。<br>聚簇索引和⾮聚簇索引的区别：<br>聚簇索引的叶⼦节点就是数据节点，⽽⾮聚簇索引的叶⼦节点仍然是索引节点，只不过有指向对应数据块的指针。</p>
+<ul>
+<li><h2 id="谈谈你对哈希索引的理解？"><a href="#谈谈你对哈希索引的理解？" class="headerlink" title="谈谈你对哈希索引的理解？"></a><strong>谈谈你对哈希索引的理解？</strong></h2></li>
+</ul>
+<p>哈希索引能以 O(1) 时间进⾏查找，但是失去了有序性。⽆法⽤于排序与分组、只⽀持精确查找，⽆法⽤于部分查<br>找和范围查找。<br>InnoDB 存储引擎有⼀个特殊的功能叫“⾃适应哈希索引”，当某个索引值被使⽤的⾮常频繁时，会在 B+ 树索引之上再创建⼀个哈希索引，这样就让 B+Tree 索引具有哈希索引的⼀些优点，⽐如：快速的哈希查找。</p>
 
     </div>
     
