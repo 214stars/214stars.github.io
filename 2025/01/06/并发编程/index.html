@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>
-            Java处理跨域的几种方式 | 阁下星辰不可及の家
+            并发编程 | 阁下星辰不可及の家
         </title>
         <meta name="author" content="阁下星辰不可及" />
         <meta name="description" content="" />
@@ -161,22 +161,22 @@
                 <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
                     <div class="article">
     <div>
-        <h1>Java处理跨域的几种方式</h1>
+        <h1>并发编程</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2024/9/17
+            2025/1/6
         </span>
         
         <span class="category">
-            <a href="/categories/Java%E4%BC%98%E5%8C%96/">
+            <a href="/categories/Go%E7%AE%80%E8%BF%B0/">
                 <span class="icon">
                     <i class="fa-solid fa-bookmark fa-fw"></i>
                 </span>
-                Java优化
+                Go简述
             </a>
         </span>
         
@@ -189,15 +189,15 @@
             
             <span class="tag">
                 
-                <a href="/tags/Java/" style="color: #00bcd4">
-                    Java
+                <a href="/tags/Go/" style="color: #ff7d73">
+                    Go
                 </a>
             </span>
             
             <span class="tag">
                 
-                <a href="/tags/%E8%B7%A8%E5%9F%9F/" style="color: #ffa2c4">
-                    跨域
+                <a href="/tags/%E5%AD%A6%E4%B9%A0%E5%88%86%E4%BA%AB/" style="color: #00bcd4">
+                    学习分享
                 </a>
             </span>
             
@@ -206,152 +206,78 @@
     </div>
     
     <div class="content" v-pre>
-        <p>简单说明一下对跨域的认知</p>
-<span id="more"></span>
+        <h3 id="Go的并发方式"><a href="#Go的并发方式" class="headerlink" title="Go的并发方式"></a>Go的并发方式</h3><span id="more"></span>
 
-<h3 id="什么是跨域？为什么会出现跨域"><a href="#什么是跨域？为什么会出现跨域" class="headerlink" title="什么是跨域？为什么会出现跨域"></a>什么是跨域？为什么会出现跨域</h3><p>定义：当一个请求url的协议、域名、端口三者之间任意一个与当前页面url不同即为跨域。</p>
-<p>原因：在前后端分离的模式下，前后端的域名是不一致的，此时就会发生跨域访问问题。在请求的过程中我们要想回去数据一般都是post&#x2F;get请求，所以跨域问题出现</p>
-<h3 id="Java实现跨域方式"><a href="#Java实现跨域方式" class="headerlink" title="Java实现跨域方式"></a>Java实现跨域方式</h3><ol>
-<li><p><strong>CorsFilter(全局跨域)</strong></p>
-<pre><code class="java">package org.chuancey.config;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+<h1 id="1-sync"><a href="#1-sync" class="headerlink" title="1. sync"></a>1. sync</h1><p>Go 语言提供了 sync 和 channel 两种方式支持协程(goroutine)的并发。</p>
+<p>例如我们希望并发下载 N 个资源，多个并发协程之间不需要通信，那么就可以使用 sync.WaitGroup，等待所有并发协程执行结束。</p>
+<pre><code class="go">import (
+    &quot;fmt&quot;
+    &quot;sync&quot;
+    &quot;time&quot;
+)
 
-@Configuration
-public class GlobalCorsConfig &#123;
+var wg sync.WaitGroup
 
-    @Bean
-​    public CorsFilter corsFilter() &#123;
-​        //1. 添加 CORS配置信息
-​        CorsConfiguration config = new CorsConfiguration();
-​        // 放行哪些原始域
-​        config.addAllowedOrigin(&quot;*&quot;);
-​        // 是否发送 Cookie
-​        config.setAllowCredentials(true);
-​        // 放行哪些请求方式
-​        config.addAllowedMethod(&quot;*&quot;);
-​        // 放行哪些原始请求头部信息
-​        config.addAllowedHeader(&quot;*&quot;);
-​        // 暴露哪些头部信息
-​        config.addExposedHeader(&quot;*&quot;);
-​        //2. 添加映射路径
-​        UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
-​        corsConfigurationSource.registerCorsConfiguration(&quot;/**&quot;,config);
-​        //3. 返回新的CorsFilter
-​        return new CorsFilter(corsConfigurationSource);
-​    &#125;
-
+func download(url string) &#123;
+    fmt.Println(&quot;start to download&quot;, url)
+    time.Sleep(time.Second) // 模拟耗时操作
+    wg.Done()
 &#125;
-</code></pre>
-</li>
-<li><p><strong>重写 WebMvcConfigurer(全局跨域)</strong></p>
-<pre><code class="java">package org.chuancey.config;
- 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
- 
-@Configuration
-public class CorsConfig implements WebMvcConfigurer &#123;
- 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) &#123;
-        registry.addMapping(&quot;/**&quot;)
-                //放行哪些原始域
-                .allowedOrigins(&quot;*&quot;)
-                .allowedHeaders(&quot;*&quot;)
-                // 是否发送Cookie
-                .allowCredentials(true)
-                .allowedMethods(&quot;GET&quot;, &quot;POST&quot;, &quot;OPTIONS&quot;, &quot;DELETE&quot;, &quot;PUT&quot;, &quot;PATCH&quot;)
-                .maxAge(3600);
+
+func main() &#123;
+    for i := 0; i &lt; 3; i++ &#123;
+        wg.Add(1)
+        go download(&quot;a.com/&quot; + string(i+&#39;0&#39;))
     &#125;
- 
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) &#123;
-        registry.addResourceHandler(&quot;/**&quot;)
-                .addResourceLocations(&quot;classpath:/static/&quot;);
-        registry.addResourceHandler(&quot;swagger-ui.html&quot;)
-                .addResourceLocations(&quot;classpath:/META-INF/resources/&quot;);
-        registry.addResourceHandler(&quot;doc.html&quot;)
-                .addResourceLocations(&quot;classpath:/META-INF/resources/&quot;);
-        registry.addResourceHandler(&quot;/webjars/**&quot;)
-                .addResourceLocations(&quot;classpath:/META-INF/resources/webjars/&quot;);
+    wg.Wait()
+    fmt.Println(&quot;Done!&quot;)
+&#125;
+</code></pre>
+<ul>
+<li>wg.Add(1)：为 wg 添加一个计数，wg.Done()，减去一个计数。</li>
+<li>go download()：启动新的协程并发执行 download 函数。</li>
+<li>wg.Wait()：等待所有的协程执行结束。</li>
+</ul>
+<pre><code class="go">$  time go run .
+start to download a.com/2
+start to download a.com/0
+start to download a.com/1
+Done!
+
+real    0m1.563s
+</code></pre>
+<p>可以看到串行需要 3s 的下载操作，并发后，只需要 1s。</p>
+<h1 id="2-channel"><a href="#2-channel" class="headerlink" title="2. channel"></a>2. channel</h1><pre><code class="go">var ch = make(chan string, 10) // 创建大小为 10 的缓冲信道
+
+func download(url string) &#123;
+    fmt.Println(&quot;start to download&quot;, url)
+    time.Sleep(time.Second)
+    ch &lt;- url // 将 url 发送给信道
+&#125;
+
+func main() &#123;
+    for i := 0; i &lt; 3; i++ &#123;
+        go download(&quot;a.com/&quot; + string(i+&#39;0&#39;))
     &#125;
-&#125;
-</code></pre>
-</li>
-<li><p><strong>使用注解 (局部跨域)</strong></p>
-<p>在控制器(类上)上使用注解 @CrossOrigin，表示该类的所有方法允许跨域。</p>
-<pre><code class="java">@RestController
-@CrossOrigin(origins = &quot;*&quot;)
-public class VerificationController &#123;
- 
-&#125;
-</code></pre>
-<p>在方法上使用注解 @CrossOrigin</p>
-<pre><code class="java">@PostMapping(&quot;/check/phone&quot;)
-    @CrossOrigin(origins = &quot;*&quot;)
-    public boolean checkPhoneNumber(@RequestBody @ApiParam VerificationPojo verification) throws BusinessException &#123;
-        return false;
+    for i := 0; i &lt; 3; i++ &#123;
+        msg := &lt;-ch // 等待信道返回消息。
+        fmt.Println(&quot;finish&quot;, msg)
     &#125;
-</code></pre>
-</li>
-<li><p><strong>手动设置响应头(局部跨域)</strong></p>
-<p>使用 HttpServletResponse 对象添加响应头(Access-Control-Allow-Origin)来授权原始域，这里 Origin的值也可以设置为 “*”,表示全部放行</p>
-<pre><code class="java">@RequestMapping(&quot;/home&quot;)
-public String home(HttpServletResponse response) &#123;
-    response.addHeader(&quot;Access-Allow-Control-Origin&quot;,&quot;*&quot;);
-    return &quot;home&quot;;
+    fmt.Println(&quot;Done!&quot;)
 &#125;
 </code></pre>
-</li>
-<li><p><strong>使用自定义filter实现跨域</strong></p>
-<pre><code>import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
- 
-@Slf4j
-@Configuration
-@WebFilter(filterName = &quot;accessFilter&quot;, urlPatterns = &quot;/*&quot;)
-public class MyCorsFilter implements Filter &#123;
-  public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException &#123;
-    HttpServletResponse response = (HttpServletResponse) res;
-    response.setHeader(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);
-    response.setHeader(&quot;Access-Control-Allow-Methods&quot;, &quot;POST, GET, OPTIONS, DELETE&quot;);
-    response.setHeader(&quot;Access-Control-Max-Age&quot;, &quot;3600&quot;);
-    response.setHeader(&quot;Access-Control-Allow-Headers&quot;, &quot;x-requested-with,content-type&quot;);
-    chain.doFilter(req, res);
-  &#125;
- 
-  public void init(FilterConfig filterConfig) &#123;log.info(&quot;AccessFilter过滤器初始化！&quot;);&#125;
- 
-  public void destroy() &#123;&#125;
-&#125;
+<p>使用 channel 信道，可以在协程之间传递消息。阻塞等待并发协程返回消息。</p>
+<pre><code class="go">$ time go run .
+start to download a.com/2
+start to download a.com/0
+start to download a.com/1
+finish a.com/2
+finish a.com/1
+finish a.com/0
+Done!
+
+real    0m1.528s
 </code></pre>
-<p>xml使自定义Filter生效方式</p>
-<pre><code class="xml">&lt;!-- 跨域访问 START--&gt;
-&lt;filter&gt;
- &lt;filter-name&gt;CorsFilter&lt;/filter-name&gt;
- &lt;filter-class&gt;org.chuancey.filter.MyCorsFilter&lt;/filter-class&gt;
-&lt;/filter&gt;
-&lt;filter-mapping&gt;
- &lt;filter-name&gt;CorsFilter&lt;/filter-name&gt;
- &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
-&lt;/filter-mapping&gt;
-&lt;!-- 跨域访问 END  --&gt;
-</code></pre>
-</li>
-</ol>
 
     </div>
     
