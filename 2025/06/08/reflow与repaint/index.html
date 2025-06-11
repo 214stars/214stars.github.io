@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>
-            文章缩略 | 阁下星辰不可及の家
+            reflow与repaint | 阁下星辰不可及の家
         </title>
         <meta name="author" content="阁下星辰不可及" />
         <meta name="description" content="" />
@@ -161,14 +161,23 @@
                 <div id="main" :class="loading ? 'into-enter-from': 'into-enter-active'">
                     <div class="article">
     <div>
-        <h1>文章缩略</h1>
+        <h1>reflow与repaint</h1>
     </div>
     <div class="info">
         <span class="date">
             <span class="icon">
                 <i class="fa-solid fa-calendar fa-fw"></i>
             </span>
-            2022/9/25
+            2025/6/8
+        </span>
+        
+        <span class="category">
+            <a href="/categories/%E5%89%8D%E7%AB%AF/">
+                <span class="icon">
+                    <i class="fa-solid fa-bookmark fa-fw"></i>
+                </span>
+                前端
+            </a>
         </span>
         
         
@@ -180,8 +189,8 @@
             
             <span class="tag">
                 
-                <a href="/tags/Markdown/" style="color: #00a596">
-                    Markdown
+                <a href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8E%9F%E7%90%86/" style="color: #ffa2c4">
+                    浏览器原理
                 </a>
             </span>
             
@@ -190,10 +199,100 @@
     </div>
     
     <div class="content" v-pre>
-        <p>这里展示大概内容</p>
-<span id="more"></span>
+        <h1 id="重排（reflow）与重绘（repaint）"><a href="#重排（reflow）与重绘（repaint）" class="headerlink" title="重排（reflow）与重绘（repaint）"></a>重排（reflow）与重绘（repaint）</h1><span id="more"></span>
 
-<p>细节部分</p>
+<h2 id="什么是-reflow？"><a href="#什么是-reflow？" class="headerlink" title="什么是 reflow？"></a>什么是 reflow？</h2><p>reflow 的本质就是重新计算 layout 树。</p>
+<p>当进行了会影响布局树的操作后，需要重新计算布局树，会引发 layout。</p>
+<p>为了避免连续的多次操作导致布局树反复计算，浏览器会合并这些操作，当 JS 代码全部完成后再进行统一计算。所以，改动属性造成的 reflow 是异步完成的。</p>
+<p>也同样因为如此，当 JS 获取布局属性时，就可能造成无法获取到最新的布局信息。</p>
+<p>浏览器在反复权衡下，最终决定获取属性立即 reflow。</p>
+<h2 id="什么是-repaint？"><a href="#什么是-repaint？" class="headerlink" title="什么是 repaint？"></a>什么是 repaint？</h2><p>repaint 的本质就是重新根据分层信息计算了绘制指令。</p>
+<p>当改动了可见样式后，就需要重新计算，会引发 repaint。</p>
+<p>由于元素的布局信息也属于可见样式，所以 reflow 一定会引起 repaint。</p>
+<table>
+<thead>
+<tr>
+<th><strong>概念</strong></th>
+<th><strong>触发条件</strong></th>
+<th><strong>性能消耗</strong></th>
+<th><strong>过程描述</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Reflow</strong></td>
+<td>影响<strong>元素几何属性&#x2F;布局</strong>的操作</td>
+<td>高！</td>
+<td>重新计算元素位置和大小，更新布局树</td>
+</tr>
+<tr>
+<td><strong>Repaint</strong></td>
+<td>仅影响<strong>外观样式</strong>（不影响布局）</td>
+<td>低</td>
+<td>更新元素外观（颜色、背景等），无需重新布局</td>
+</tr>
+</tbody></table>
+<h3 id="触发场景示例"><a href="#触发场景示例" class="headerlink" title="触发场景示例"></a><strong>触发场景示例</strong></h3><h4 id="触发-Reflow-的操作："><a href="#触发-Reflow-的操作：" class="headerlink" title="触发 Reflow 的操作："></a>触发 <strong>Reflow</strong> 的操作：</h4><pre><code class="javascript">// 改变布局的样式
+element.style.width = &#39;100px&#39;;
+element.style.height = &#39;200px&#39;;
+element.style.padding = &#39;10px&#39;;
+
+// 窗口大小改变
+window.addEventListener(&#39;resize&#39;, ...);
+
+// 读写布局相关属性（强制同步重排）
+const width = element.offsetWidth; // 读取也会触发重排！
+</code></pre>
+<h4 id="触发-Repaint-的操作："><a href="#触发-Repaint-的操作：" class="headerlink" title="触发 Repaint 的操作："></a>触发 <strong>Repaint</strong> 的操作：</h4><pre><code class="javascript">// 仅改变外观的样式
+element.style.color = &#39;red&#39;;
+element.style.backgroundColor = &#39;#ccc&#39;;
+element.style.outline = &#39;1px solid blue&#39;;
+</code></pre>
+<h3 id="性能优化策略"><a href="#性能优化策略" class="headerlink" title="性能优化策略"></a><strong>性能优化策略</strong></h3><ol>
+<li><p><strong>减少重排次数</strong>：</p>
+<p>批量修改 DOM：</p>
+<p>使用 <code>document.createDocumentFragment()</code> 或离线 DOM 操作：</p>
+<pre><code class="javascript">const fragment = document.createDocumentFragment();
+for (let i = 0; i &lt; 100; i++) &#123;
+    const el = document.createElement(&#39;div&#39;);
+    fragment.appendChild(el);
+&#125;
+document.body.appendChild(fragment);
+</code></pre>
+<p>避免逐行修改样式：</p>
+<p>使用 <code>classList</code> 一次性修改：</p>
+<pre><code class="javascript">// 而非多次修改 style.xxx
+element.classList.add(&#39;active&#39;); 
+</code></pre>
+</li>
+<li><p><strong>分离读写操作</strong>：</p>
+<p>避免布局抖动（Layout Thrashing）：</p>
+<pre><code class="javascript">// ❌ 错误：读写交替
+const width = element.offsetWidth; // 读（触发重排）
+element.style.width = width + &#39;px&#39;; // 写（触发重排）
+
+// ✅ 正确：批量读写
+const width = element.offsetWidth; // 集中读
+requestAnimationFrame(() =&gt; &#123;
+  element.style.width = width + &#39;px&#39;; // 集中写
+&#125;);
+</code></pre>
+</li>
+<li><p><strong>使用 CSS 优化</strong>：</p>
+<ul>
+<li>用 <code>transform</code> 和 <code>opacity</code> 做动画（跳过重排重绘，进入<strong>合成阶段</strong>）。</li>
+<li>使用 <code>Flexbox/Grid</code> 布局替代浮动&#x2F;定位（减少布局嵌套层级）。</li>
+</ul>
+</li>
+<li><p><strong>脱离文档流</strong>：</p>
+<p>复杂动画元素使用 <code>position: absolute/fixed</code>，减少重排范围。</p>
+</li>
+</ol>
+<h2 id="结论："><a href="#结论：" class="headerlink" title="结论："></a>结论：</h2><ul>
+<li><strong>重排必然触发重绘</strong>，但重绘不一定触发重排。</li>
+<li><strong>优化优先级：减少重排 &gt; 减少重绘</strong>。</li>
+<li>现代框架（React&#x2F;Vue）已通过虚拟 DOM 减少了直接操作，但手动优化仍必要。</li>
+</ul>
+<p>通过减少重排、合并样式修改、利用 CSS 硬件加速（如 <code>transform</code>），可显著提升页面流畅度，尤其在低端设备上效果明显。</p>
 
     </div>
     
